@@ -9,45 +9,44 @@ const Quiz = ({ onQuizComplete }) => {
     currentQuestionIndex,
     addScore,
     nextQuestion,
-    answered,
-    setAnswered,
   } = useQuiz()
 
   const [timeLeft, setTimeLeft] = useState(15)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [shuffledOptions, setShuffledOptions] = useState([])
+  const [isAnswered, setIsAnswered] = useState(false)
 
   const question = quizData[currentQuestionIndex]
-  const isLastQuestion = currentQuestionIndex === quizData.length - 1
 
-  // Initialize shuffled options
+  // If question is missing (index out of range), ensure we complete the quiz
   useEffect(() => {
+    if (!question) {
+      console.warn('Quiz: question is undefined (index:', currentQuestionIndex, 'length:', quizData.length, ')')
+      onQuizComplete()
+    }
+  }, [question, currentQuestionIndex, onQuizComplete])
+
+  // Reset state for new question
+  useEffect(() => {
+    if (!question) return
+    
     setShuffledOptions(getShuffledOptions(question))
     setSelectedAnswer(null)
     setTimeLeft(15)
+    setIsAnswered(false)
   }, [currentQuestionIndex, question])
 
-  // Define handleNext before using it
-  const handleNext = useCallback(() => {
-    if (isLastQuestion) {
-      onQuizComplete()
-    } else {
-      nextQuestion()
-    }
-  }, [isLastQuestion, onQuizComplete, nextQuestion])
-
-  const handleTimeoutAnswer = useCallback(() => {
-    playErrorSound()
-    setAnswered(true)
-    handleNext()
-  }, [handleNext, setAnswered])
-
-  // Timer effect
+  // Handle timeout
   useEffect(() => {
-    if (answered) return
+    if (isAnswered) return
+    if (!question) return
 
     if (timeLeft === 0) {
-      handleTimeoutAnswer()
+      playErrorSound()
+      setIsAnswered(true)
+      setTimeout(() => {
+        handleNextQuestion()
+      }, 1000)
       return
     }
 
@@ -56,13 +55,13 @@ const Quiz = ({ onQuizComplete }) => {
     }, 1000)
 
     return () => clearTimeout(timer)
-  }, [timeLeft, answered, handleTimeoutAnswer])
+  }, [timeLeft, isAnswered, question])
 
-  const handleAnswerSelect = useCallback((option) => {
-    if (answered) return
+  const handleAnswer = (option) => {
+    if (isAnswered || !question) return
 
     setSelectedAnswer(option)
-    setAnswered(true)
+    setIsAnswered(true)
 
     if (option === question.correct) {
       playSuccessSound()
@@ -70,16 +69,42 @@ const Quiz = ({ onQuizComplete }) => {
     } else {
       playErrorSound()
     }
+  }
 
-    setTimeout(() => {
-      handleNext()
+  const handleNextQuestion = useCallback(() => {
+    if (currentQuestionIndex >= quizData.length - 1) {
+      // Quiz is complete
+      onQuizComplete()
+    } else {
+      nextQuestion()
+    }
+  }, [currentQuestionIndex, onQuizComplete, nextQuestion])
+
+  // Auto-advance after showing answer
+  useEffect(() => {
+    if (!isAnswered) return
+
+    const timer = setTimeout(() => {
+      handleNextQuestion()
     }, 1000)
-  }, [answered, question.correct, addScore, handleNext, setAnswered])
+
+    return () => clearTimeout(timer)
+  }, [isAnswered, handleNextQuestion])
+
+  if (!question) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 p-4 flex items-center justify-center">
+        <div className="text-white text-lg">Calculando resultados…</div>
+      </div>
+    )
+  }
+
+  const isLastQuestion = currentQuestionIndex === quizData.length - 1
 
   const getButtonStyle = (option) => {
     let baseStyle = 'btn-option'
 
-    if (!answered) {
+    if (!isAnswered) {
       if (option === selectedAnswer) {
         baseStyle += ' border-primary'
       }
@@ -133,7 +158,11 @@ const Quiz = ({ onQuizComplete }) => {
 
           {/* Flag and Timer */}
           <div className="flex flex-col items-center gap-4 mb-8">
-            <div className="text-6xl">{question.flag}</div>
+            <img 
+              src={question.flag} 
+              alt="Country flag"
+              className="w-48 h-32 object-cover rounded-lg shadow-lg"
+            />
             <div className={`text-3xl font-bold ${timeLeft <= 5 ? 'text-red-500' : 'text-primary'}`}>
               {timeLeft}s
             </div>
@@ -144,19 +173,19 @@ const Quiz = ({ onQuizComplete }) => {
             {shuffledOptions.map((option) => (
               <button
                 key={option}
-                onClick={() => handleAnswerSelect(option)}
-                disabled={answered}
-                className={`${getButtonStyle(option)} ${answered ? 'cursor-default' : ''}`}
+                onClick={() => handleAnswer(option)}
+                disabled={isAnswered}
+                className={`${getButtonStyle(option)} ${isAnswered ? 'cursor-default' : ''}`}
               >
                 {option}
-                {answered && option === question.correct && ' ✓'}
-                {answered && option === selectedAnswer && option !== question.correct && ' ✗'}
+                {isAnswered && option === question.correct && ' ✓'}
+                {isAnswered && option === selectedAnswer && option !== question.correct && ' ✗'}
               </button>
             ))}
           </div>
 
           {/* Status message */}
-          {answered && (
+          {isAnswered && (
             <div className={`text-center font-semibold text-lg ${
               selectedAnswer === question.correct ? 'text-green-400' : 'text-red-400'
             }`}>

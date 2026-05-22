@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom'
+import { useQuiz } from '../contexts/QuizContext'
 
 const Home = () => {
   const navigate = useNavigate()
+  const { resetQuiz } = useQuiz()
 
   const handleStartQuiz = () => {
+    resetQuiz()
     navigate('/quiz')
   }
 

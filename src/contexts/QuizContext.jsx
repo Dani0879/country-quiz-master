@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { quizData } from '../data/quizData'
 
 const QuizContext = createContext()
 
@@ -7,7 +8,6 @@ export const QuizProvider = ({ children }) => {
   const [highScore, setHighScore] = useState(0)
   const [darkMode, setDarkMode] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answered, setAnswered] = useState(false)
 
   // Load high score from localStorage
   useEffect(() => {
@@ -42,12 +42,10 @@ export const QuizProvider = ({ children }) => {
   const resetQuiz = () => {
     setCurrentScore(0)
     setCurrentQuestionIndex(0)
-    setAnswered(false)
   }
 
   const nextQuestion = () => {
-    setCurrentQuestionIndex(prev => prev + 1)
-    setAnswered(false)
+    setCurrentQuestionIndex(prev => Math.min(prev + 1, quizData.length - 1))
   }
 
   const addScore = () => {
@@ -74,8 +72,6 @@ export const QuizProvider = ({ children }) => {
         addScore,
         resetQuiz,
         nextQuestion,
-        answered,
-        setAnswered,
       }}
     >
       {children}
