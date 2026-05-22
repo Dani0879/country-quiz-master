@@ -4,6 +4,12 @@
 
 A responsive country flag quiz application built with React, React Router, and Tailwind CSS based on the devChallenges.io design.
 
+## 🚀 Aplicación en Vivo
+
+**[🔗 Accede aquí: https://country-quiz-master.netlify.app](https://country-quiz-master.netlify.app)**
+
+Despliegue automático con CI/CD desde rama `main` en GitHub → Netlify
+
 ## 🎯 Requisitos Cumplidos
 
 ### Stack Obligatorio ✅
@@ -24,6 +30,12 @@ A responsive country flag quiz application built with React, React Router, and T
   - Results Component Tests - Cálculo de score
   - Home Component Tests - Navegación y UI
 
+### Despliegue Continuo (CI/CD) ✅
+- **GitHub Integration** - Repositorio conectado con rama `main`
+- **Netlify Deployment** - Despliegue automático en cada push a `main`
+- **Netlify Configuration** - `netlify.toml` configurado para build automático
+- **Build Command** - `npm run build` genera carpeta `/dist`
+
 ### Historial de Versiones ✅
 Múltiples commits significativos que demuestran desarrollo progresivo
 (Ver [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) para detalles)
@@ -38,8 +50,9 @@ Múltiples commits significativos que demuestran desarrollo progresivo
 ✅ **Audio Feedback** - Success and error sounds
 ✅ **ESLint** - Code quality enforcement
 ✅ **Unit Tests** - 4+ comprehensive tests with Vitest
+✅ **CI/CD Automation** - Despliegue continuo con Netlify
 
-## The challenge
+## 🔄 Flujo de Despliegue (CI/CD)
 
 Your task is to create a web page that closely resembles the provided design.
 
